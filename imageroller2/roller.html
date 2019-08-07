@@ -1,0 +1,137 @@
+<html>
+<head>
+    <script type="application/javascript">
+        var thumbNailStore = {
+            123: [
+                "https://image.flaticon.com/icons/svg/188/188234.svg",
+                "https://image.flaticon.com/icons/svg/188/188235.svg",
+                "https://image.flaticon.com/icons/svg/188/188236.svg",
+                "https://image.flaticon.com/icons/svg/188/188237.svg",
+                "https://image.flaticon.com/icons/svg/188/188238.svg",
+                "https://image.flaticon.com/icons/svg/188/188239.svg",
+                "https://image.flaticon.com/icons/svg/188/188240.svg",
+                "https://image.flaticon.com/icons/svg/188/188241.svg",
+                "https://image.flaticon.com/icons/svg/188/188242.svg"]
+        };
+
+        function rollover(element) {
+            setMouseOver(element, "true");
+
+            setTimeout(function () {
+                if (!isMouseOver(element)) {
+                    return;
+                }
+                if (!thumbNailStore[element.id]) {
+                    return;
+                }
+                if (!isRunning(element)) {
+                    setRunning(element, "true");
+                    setMainThumb(element);
+                    preload(thumbNailStore[element.id][1]);
+                    setImageSrc(element, thumbNailStore[element.id][0]);
+                    start(1, thumbNailStore[element.id], element);
+                }
+            }, 200);
+        }
+
+        function start(startIndex, thumbNails, element) {
+            if (!isCanceled(element) && startIndex < thumbNails.length) {
+                setTimeout(function () {
+                    if (!isCanceled(element)) {
+                        setImageSrc(element, thumbNails[startIndex]);
+                    }
+                    startIndex++;
+                    preload(thumbNails[startIndex]);
+                    start(startIndex, thumbNails, element);
+                }, 700);
+            } else if (startIndex >= thumbNails.length) {
+                start(0, thumbNails, element);
+            }
+            else {
+                setRunning(element, "false");
+                setCanceled(element, "false");
+                resetToMainThumb(element);
+            }
+        }
+
+        function preload(url) {
+            if (url) {
+                new Image().src = url;
+            }
+        }
+
+        function cancel(element) {
+            setMouseOver(element, "false");
+
+            if (isRunning(element)) {
+                setCanceled(element, "true");
+                resetToMainThumb(element);
+            }
+        }
+
+        // HELPERS
+
+        function isRunning(element) {
+            return element.getAttribute("data-isrunning") === "true";
+        }
+
+        function setRunning(element, state) {
+            element.setAttribute("data-isrunning", state);
+        }
+
+        function isCanceled(element) {
+            return element.getAttribute("data-iscanceled") === "true";
+        }
+
+        function setCanceled(element, state) {
+            element.setAttribute("data-iscanceled", state);
+        }
+
+        function isMouseOver(element) {
+            return element.getAttribute("data-mouseIsOver") === "true";
+        }
+
+        function setMouseOver(element, state) {
+            if (isMouseOver(element) === state) {
+                return;
+            }
+            element.setAttribute("data-mouseIsOver", state);
+        }
+
+        function setImageSrc(element, url) {
+            element.setAttribute("src", url);
+        }
+
+        function setMainThumb(element) {
+            element.setAttribute("data-mainThumb", element.getAttribute("src"));
+        }
+
+        function resetToMainThumb(element) {
+            element.setAttribute("src", element.getAttribute("data-mainThumb"));
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var thumbList = document.getElementsByClassName("rll");
+            for (var i = 0; i < thumbList.length; i++) {
+                var id = thumbList[i].id;
+                var thumb = document.getElementById(id);
+                thumb.addEventListener('mouseover', rollover.bind(null, thumb));
+                thumb.addEventListener('mouseout', cancel.bind(null, thumb));
+            }
+        });
+    </script>
+</head>
+<body>
+<div>
+    <!-- Inline function calls, probably bad because unnecessary HTML -->
+    <!--<img id="123" onmouseover="rollover(this)" onmouseout="cancel(this)"-->
+    <!--src="https://image.flaticon.com/icons/svg/188/188238.svg"-->
+    <!--width="100" height="100">-->
+
+    <!-- Register listeners. NOTE: Element must be class 'rll' -->
+    <img id="123" class="rll"
+         src="https://image.flaticon.com/icons/svg/188/188238.svg"
+         width="100" height="100">
+</div>
+</body>
+</html>
